@@ -1,5 +1,5 @@
 region = "us-east-1"
-ami = "ami-04e601abe3e1a910f"
+ami = "ami-053b0d53c279acc90"
 instance_type = "t2.micro"
 vpc_cidr = "10.0.0.0/16"
 subnet_configs = {
