@@ -1,0 +1,34 @@
+[2:09 PM] mahmoud.alaa.aws.25492 (Guest)
+
+Networking
+1- create vpc
+2- create internet gateway
+3- create public route table
+4- create private route table
+5- create public route
+6- attach public route table to subnets
+Compute
+7- create security group which allow ssh from 0.0.0.0/0
+8- create security group that allow ssh and port 3000 from vpc cidr only
+7- create ec2(bastion) in public subnet with security group from 7
+8- create ec2(application) private subnet with security group from 8
+
+[2:09 PM] mahmoud.alaa.aws.25492 (Guest)
+
+create private route table
+`
+[2:10 PM] mahmoud.alaa.aws.25492 (Guest)
+
+create nat gateway
+
+[2:10 PM] mahmoud.alaa.aws.25492 (Guest)
+
+attach it to private subnets
+
+[2:11 PM] mahmoud.alaa.aws.25492 (Guest)
+
+configure remote backend and configure state locking using dynamo db
+
+
+
+4 subnets = 2 public + 2 private (different az) 
