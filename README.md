@@ -1,6 +1,5 @@
-# Project Name
+# Terraform Multi-Environment Infrastructure Deployment
 
-Terraform Multi-Environment Infrastructure Deployment
 
 ## Introduction
 
