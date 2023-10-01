@@ -73,7 +73,7 @@ create prod workspace
 terraform workspace new prod
 ```
 
-#### Declaring variables and default values 
+Declaring variables and default values 
 #### variables.tfvars
 default values if environment is not specified 
 ```hcl
@@ -129,7 +129,7 @@ variable "subnet_configs" {
   }
 }
 ```
-#### values for each workspace assigned at .tfvars
+values for each workspace assigned at .tfvars
 #### dev.tfvars 
 ```hcl
 region = "eu-central-1"
@@ -189,6 +189,21 @@ subnet_configs = {
   }
 ```
 
+now we can apply each workspace and see the infrastructure in different regions 
+
+before applying choose workspace 
+
+for dev workspace 
+```bash
+terraform workspace select dev 
+```
+apply 
+```bash
+terraform apply -var-file dev.tfvars 
+```
+Infrastructure 
+[](./screenshots/frankfurt-vpc.png)
+[](.screenshots/frankfurst-vpc-private.png)
 
 
 
