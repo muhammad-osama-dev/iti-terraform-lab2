@@ -36,35 +36,35 @@ Network resources are organized within a reusable network module to ensure consi
 
 The Terraform code deploys infrastructure to AWS regions `us-east-1` and `eu-central-1` based on the selected workspace (environment).
 
-#### Local-Exec Provisioner
+### Local-Exec Provisioner
 
 A local-exec provisioner is used to execute a command that prints the public IP of the bastion EC2 instance after deployment.
 
-### GitHub Repository
+## GitHub Repository
 
 The infrastructure code is uploaded to a GitHub repository for version control and collaboration.
 
-### Continuous Integration/Continuous Deployment (CI/CD)
+## Continuous Integration/Continuous Deployment (CI/CD)
 
 A Jenkins image with Terraform installed is created for CI/CD pipelines. A pipeline is configured to accept an environment parameter and apply the Terraform code to the selected environment.
 
-#### Jenkins and Terraform Image 
+### Jenkins and Terraform Image 
 
-##### Dockefile
-#### Jenkins Integration
+### Dockefile
+### Jenkins Integration
 
 
 
-### Email Notifications
+## Email Notifications
 
 Amazon SES is used to verify email addresses for sending notifications.
 
-#### Email Verification with Amazon SES
-#### Lambda Function for Notifications
+### Email Verification with Amazon SES
+### Lambda Function for Notifications
 
 A Lambda function is created to send email notifications when there are changes in the Terraform state files.
 
-### Trigger and Email Notifications
+## Trigger and Email Notifications
 
 A trigger mechanism is implemented to detect changes in the Terraform state files and send email notifications using the Lambda function and SES.
 
