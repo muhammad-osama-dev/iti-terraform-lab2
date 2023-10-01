@@ -429,15 +429,52 @@ pipeline {
 ## Email Notifications
 
 Amazon SES is used to verify email addresses for sending notifications.
-
+![image](./screenshots/email-verifying1.png)
 ### Email Verification with Amazon SES
+
+![image](./screenshots/email-verifcation.png)
+
 ### Lambda Function for Notifications
 
 A Lambda function is created to send email notifications when there are changes in the Terraform state files.
+```python
+import boto3
+
+def lambda_handler(event, context):
+    ses = boto3.client('ses', region_name='eu-central-1')
+    sender_email = 'mohamedelshafei977@gmail.com'
+    recipient_email = 'mohamedelshafei977@gmail.com'
+    subject = 'Hello'
+    body = "it is 2AM"
+    response = ses.send_email(
+        Source=sender_email,  # Corrected variable name
+        Destination={
+            'ToAddresses': [
+                recipient_email,
+            ],
+        },
+        Message={
+            'Subject': {
+                'Data': subject,
+            },
+            'Body': {
+                'Text': {
+                    'Data': body,
+                },
+            },
+        },
+    )
+
+    return {
+        'statusCode': 200,
+        'body': 'Email sent successfully.',
+    }
+```
 
 ## Trigger and Email Notifications
 
 A trigger mechanism is implemented to detect changes in the Terraform state files and send email notifications using the Lambda function and SES.
+![image](./screenshots/lamda-and-s3.png)
 
 Refer to individual sections and the provided Terraform code for more details on each component.
 
