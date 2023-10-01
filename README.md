@@ -74,7 +74,7 @@ terraform workspace new prod
 ```
 
 Declaring variables and default values 
-#### variables.tfvars
+#### variables.tf
 default values if environment is not specified 
 ```hcl
 variable "region" {
@@ -189,9 +189,7 @@ subnet_configs = {
   }
 ```
 
-now we can apply each workspace and see the infrastructure in different regions 
-
-before applying choose workspace 
+select workspace
 
 for dev workspace 
 ```bash
@@ -209,15 +207,136 @@ Infrastructure
 
 ### Network Module
 
-Network resources are organized within a reusable network module to ensure consistent configurations across environments.
+1. Network resources are organized within a reusable network module to ensure consistent configurations across environments.
+2. create input variables (variables.tf) to map the *.tfvars to the network module  
+#### variables.tf 
+```hcl
+variable "region" {
+  type    = string
+  default = "eu-central-1"
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_configs" {
+  description = "Configuration for subnets"
+  type        = map(object({
+    cidr_block        = string
+    availability_zone = string
+    name              = string
+  }))
+  default = {
+    public_subnet1 = {
+      cidr_block        = "10.0.1.0/24"
+      availability_zone = "eu-central-1a"
+      name              = "public_subnet1"
+    },
+    public_subnet2 = {
+      cidr_block        = "10.0.2.0/24"
+      availability_zone = "eu-central-1b"
+      name              = "public_subnet2"
+    },
+    private_subnet1 = {
+      cidr_block        = "10.0.3.0/24"
+      availability_zone = "eu-central-1a"
+      name              = "private_subnet1"
+    },
+    private_subnet2 = {
+      cidr_block        = "10.0.4.0/24"
+      availability_zone = "eu-central-1b"
+      name              = "private_subnet2"
+    }
+  }
+}
+```
+3. create output variable to access resources created in the module 
+```hcl
+variable "region" {
+  type    = string
+  default = "eu-central-1"
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_configs" {
+  description = "Configuration for subnets"
+  type        = map(object({
+    cidr_block        = string
+    availability_zone = string
+    name              = string
+  }))
+  default = {
+    public_subnet1 = {
+      cidr_block        = "10.0.1.0/24"
+      availability_zone = "eu-central-1a"
+      name              = "public_subnet1"
+    },
+    public_subnet2 = {
+      cidr_block        = "10.0.2.0/24"
+      availability_zone = "eu-central-1b"
+      name              = "public_subnet2"
+    },
+    private_subnet1 = {
+      cidr_block        = "10.0.3.0/24"
+      availability_zone = "eu-central-1a"
+      name              = "private_subnet1"
+    },
+    private_subnet2 = {
+      cidr_block        = "10.0.4.0/24"
+      availability_zone = "eu-central-1b"
+      name              = "private_subnet2"
+    }
+  }
+}
+```
+
+4. create network module to expose needed variables outside the network module
+```hcl
+module "network" {
+  source = "./network"
+  region = var.region
+  vpc_cidr = var.vpc_cidr
+  subnet_configs = var.subnet_configs
+}
+```
 
 ### Deployment
 
 The Terraform code deploys infrastructure to AWS regions `us-east-1` and `eu-central-1` based on the selected workspace (environment).
 
+#### To deploy 
+
+1. select workspace
+
+for dev workspace (eu-central-1)
+```bash
+terraform workspace select dev 
+```
+2. apply 
+```bash
+terraform apply -var-file dev.tfvars 
+```
+Infrastructure 
+![Sample Image](./screenshots/instances.png)
+![Sample Image](./screenshots/frankfurt-vpc.png)
+![Sample Image](./screenshots/frankfurt-vpc1.png)
+![Sample Image](./screenshots/frankfurst-vpc-private1.png)
+
+
 ### Local-Exec Provisioner
 
 A local-exec provisioner is used to execute a command that prints the public IP of the bastion EC2 instance after deployment.
+
+![Sample Image](./screenshots/instances.png)
+![Sample Image](./screenshots/inventory.png)
 
 ## GitHub Repository
 
@@ -226,11 +345,84 @@ The infrastructure code is uploaded to a GitHub repository for version control a
 ## Continuous Integration/Continuous Deployment (CI/CD)
 
 A Jenkins image with Terraform installed is created for CI/CD pipelines. A pipeline is configured to accept an environment parameter and apply the Terraform code to the selected environment.
+### Steps:
+1. Create a Dockerfile
+2. add the following code 
+```hcl
+FROM jenkins/jenkins:latest
 
-### Jenkins and Terraform Image 
+USER root
 
-### Dockefile
-### Jenkins Integration
+RUN apt-get update && apt-get install -y curl unzip
+
+RUN curl -LO https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip && \
+    unzip terraform_1.5.7_linux_amd64.zip -d /usr/local/bin/ && \
+    rm terraform_1.5.7_linux_amd64.zip
+```
+3. build the docker image 
+
+```bash
+docker build -t <image-name> .
+```
+4. run the docker container 
+- port map 8080 for jenkins 
+- port map 50000 for terraform
+```bash
+docker run -d -p 8080:8080 -p 50000:50000 --name <container-name> <image-name>
+```
+5. access jenkins through http://localhost:8080
+
+6. enter the docker container to get the password 
+```bash
+docker exec -it <container-name> /bin/bash
+```
+
+```bash
+cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+### Jenkins 
+1. create pipeline with the following code 
+```bash
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'env', choices: ["dev", "prod"], description: 'Select environment')
+    }
+    environment {
+        AWS_CREDENTIALS = credentials('08f2e8f4-4b89-4190-a2de-b1341dac11f8') 
+        TF_ENV = "${params.env}"
+        ENV_VAR_FILE = "env_vars/${TF_ENV}.tfvars"  
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git(
+                    url: "https://github.com/muhammad-osama-dev/iti-terraform-lab2.git",
+                    branch: "main",
+                    poll: true
+                )
+            }
+        }
+        stage('Terraform Deployment') {
+            steps {
+                script {
+                    def envVarFile = "${TF_ENV}.tfvars"
+                    sh 'terraform init'
+                    sh "terraform plan -var-file=${envVarFile}"
+                    sh "terraform apply -var-file=${envVarFile} -auto-approve"
+                }
+            }
+        }
+    }
+}
+```
+2. choose build with parameters 
+3. choose environment 
+![image](./screenshots/choosing-dev-env.png)
+
+
+
 
 
 
