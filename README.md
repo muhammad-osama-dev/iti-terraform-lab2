@@ -476,8 +476,10 @@ def lambda_handler(event, context):
 A trigger mechanism is implemented to detect changes in the Terraform state files and send email notifications using the Lambda function and SES.
 ![image](./screenshots/lamda-and-s3.png)
 
+getting emails when triggering a build 
+![image](./screenshots/when-triggering-build.png)
+![image](./screenshots/got-email.png)
 Refer to individual sections and the provided Terraform code for more details on each component.
-
 ## Getting Started
 
 To get started, follow these steps:
