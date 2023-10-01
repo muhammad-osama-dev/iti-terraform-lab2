@@ -202,8 +202,8 @@ apply
 terraform apply -var-file dev.tfvars 
 ```
 Infrastructure 
-[](./screenshots/frankfurt-vpc.png)
-[](.screenshots/frankfurst-vpc-private.png)
+![Sample Image](./screenshots/frankfurt-vpc.png)
+![Sample Image](./screenshots/frankfurst-vpc-private.png)
 
 
 
