@@ -202,10 +202,9 @@ apply
 terraform apply -var-file dev.tfvars 
 ```
 Infrastructure 
+![Sample Image](./screenshots/frankfurt-vpc.png)
 ![Sample Image](./screenshots/frankfurt-vpc1.png)
 ![Sample Image](./screenshots/frankfurst-vpc-private1.png)
-
-
 
 
 ### Network Module
