@@ -392,9 +392,23 @@ pipeline {
     environment {
         AWS_CREDENTIALS = credentials('08f2e8f4-4b89-4190-a2de-b1341dac11f8') 
         TF_ENV = "${params.env}"
-        ENV_VAR_FILE = "env_vars/${TF_ENV}.tfvars"  
+        ENV_VAR_FILE = "${TF_ENV}.tfvars"  
     }
     stages {
+        stage('List Workspaces') {
+            steps {
+                script {
+                    def workspaceName = TF_ENV
+                    def workspaceExists = sh(script: "terraform workspace list | grep -q $workspaceName", returnStatus: true)
+                    
+                    if (workspaceExists != 0) {
+                        sh "terraform workspace new $workspaceName"
+                    } else {
+                        echo "Workspace $workspaceName already exists."
+                    }
+                }
+            }
+        }
         stage('Checkout Code') {
             steps {
                 git(
@@ -409,6 +423,7 @@ pipeline {
                 script {
                     def envVarFile = "${TF_ENV}.tfvars"
                     sh 'terraform init'
+                    sh "terraform workspace select $TF_ENV"
                     sh "terraform plan -var-file=${envVarFile}"
                     sh "terraform apply -var-file=${envVarFile} -auto-approve"
                 }
